@@ -67,17 +67,17 @@ export default function Home() {
                 <Card className="p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
                   {index === 0 && (
                     <>
-                      <h3 className="text-lg font-semibold mb-2">简单易用</h3>
+                      <h3 className="text-lg font-semibold mb-2">功能丰富</h3>
                       <p className="text-gray-600 dark:text-gray-300 flex-grow">
-                        直观的界面设计，快速上手使用
+                        不仅对话答疑，还可推荐题目，更有答疑周报推送
                       </p>
                     </>
                   )}
                   {index === 1 && (
                     <>
-                      <h3 className="text-lg font-semibold mb-2">安全可靠</h3>
+                      <h3 className="text-lg font-semibold mb-2">自主研发</h3>
                       <p className="text-gray-600 dark:text-gray-300 flex-grow">
-                        采用JWT认证，保障数据安全
+                        由电子系及计算机系学生自主开发，且获《电电》课程组授权
                       </p>
                     </>
                   )}
@@ -85,7 +85,7 @@ export default function Home() {
                     <>
                       <h3 className="text-lg font-semibold mb-2">响应迅速</h3>
                       <p className="text-gray-600 dark:text-gray-300 flex-grow">
-                        优化的性能表现，快速响应请求
+                        使用 ChatGLM API，高稳定性，随时待命
                       </p>
                     </>
                   )}

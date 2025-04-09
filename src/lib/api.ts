@@ -42,6 +42,9 @@ export const authApi = {
   login: (credentials: LoginCredentials) =>
     api.post<AuthResponse>('/login', credentials),
   
+  adminLogin: (credentials: LoginCredentials) =>
+    api.post<AuthResponse>('/login/admin', credentials),
+  
   register: (credentials: RegisterCredentials) =>
     api.post<RegisterResponse>('/register', credentials),
     

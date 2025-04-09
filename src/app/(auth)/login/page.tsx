@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/form-input';
@@ -18,6 +20,7 @@ import { useAuthStore } from '@/lib/store';
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema)
@@ -25,7 +28,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await authApi.login({
+      const response = await (isAdmin ? authApi.adminLogin : authApi.login)({
         username: data.username,
         password: data.password
       });
@@ -77,6 +80,15 @@ export default function LoginPage() {
                 {...register('password')}
                 className="mt-1"
                 error={errors.password?.message}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="admin-switch">管理员登录</Label>
+              <Switch
+                id="admin-switch"
+                checked={isAdmin}
+                onCheckedChange={setIsAdmin}
               />
             </div>
 
