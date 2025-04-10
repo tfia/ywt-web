@@ -26,7 +26,7 @@ export default function DashboardPage() {
         >
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-3xl font-extrabold text-gray-900">欢迎回来，{user?.username}</h2>
+              <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">欢迎回来，{user?.username}</h2>
             </div>
             <Button
               variant="outline"
@@ -43,19 +43,19 @@ export default function DashboardPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">个人信息</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">个人信息</h3>
                 <div className="space-y-2">
                   <p>
-                    <span className="text-gray-600">用户名：</span>
-                    <span className="font-medium">{user?.username}</span>
+                    <span className="text-gray-600 dark:text-gray-400">用户名：</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{user?.username}</span>
                   </p>
                   <p>
-                    <span className="text-gray-600">邮箱：</span>
-                    <span className="font-medium">{user?.email}</span>
+                    <span className="text-gray-600 dark:text-gray-400">邮箱：</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{user?.email}</span>
                   </p>
                   <p>
-                    <span className="text-gray-600">注册时间：</span>
-                    <span className="font-medium">
+                    <span className="text-gray-600 dark:text-gray-400">注册时间：</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {user?.createdAt && new Date(user.createdAt).toLocaleString('zh-CN')}
                     </span>
                   </p>

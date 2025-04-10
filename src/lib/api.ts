@@ -49,4 +49,7 @@ export const authApi = {
     api.post<RegisterResponse>('/register', credentials),
     
   getProfile: () => api.get<ProfileResponse>('/profile'),
+
+  verifyEmail: (username: string, code: string) =>
+    api.get(`/verify_email/${username}?code=${code}`),
 };

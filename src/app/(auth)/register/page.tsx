@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -7,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { useAuthStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/form-input';
 import { Label } from '@/components/ui/label';
@@ -16,10 +18,22 @@ import { authApi } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema)
   });
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  if (!isLoading && isAuthenticated) {
+    return null;
+  }
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -28,8 +42,8 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password
       });
-      toast.success('注册成功，请登录');
-      router.push('/login');
+      toast.success('注册成功，请查收激活邮件');
+      router.push(`/activate?username=${data.username}`);
     } catch (err) {
       toast.error('注册失败', {
         description: `${err}`
