@@ -34,6 +34,7 @@ export interface AuthResponse {
 }
 
 interface ProfileResponse {
+  username: string;  // Added username field
   email: string;
   created_at: string;
 }

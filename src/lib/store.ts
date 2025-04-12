@@ -14,6 +14,7 @@ interface AuthState {
   login: (token: string) => void;
   logout: () => void;
   initialize: () => Promise<void>;
+  getToken: () => string | null; // Add the getToken method to the interface
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -34,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (token) {
         const { data } = await authApi.getProfile();
         const user: User = {
-          username: data.email.split('@')[0],  // 暂时用邮箱前缀作为用户名
+          username: data.username, // Now using the username from API
           email: data.email,
           createdAt: data.created_at
         };
@@ -46,5 +47,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.removeItem('jwt');
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
+  },
+  getToken: () => {
+    return localStorage.getItem('jwt');
   },
 }));
