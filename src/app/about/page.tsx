@@ -28,6 +28,7 @@ export default function AboutPage() {
               <li>学习进度追踪</li>
               <li>答疑周报服务</li>
             </ul>
+            <p>YWT 的账号与数据库系统开源，可以点击页脚的链接查看代码仓库。</p>
           </div>
           <Button
             onClick={() => router.push("/")}

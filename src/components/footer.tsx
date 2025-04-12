@@ -52,7 +52,7 @@ export function Footer() {
       try {
         const res = await fetch(`https://api.github.com/repos/tfia/${repo}/commits/main`);
         const data = await res.json();
-        const commitId = data.sha.slice(0, 10);
+        const commitId = data.sha.slice(0, 7);
         setCommit(commitId);
         setCommitToCache(cacheKey, commitId);
       } catch {
@@ -72,7 +72,7 @@ export function Footer() {
         </p>
         <div className="flex space-x-4">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            基于 Dify 的开源项目
+            开源项目
           </p>
           <Link 
             href="/about"
