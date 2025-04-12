@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import * as z from "zod"
+import pako from 'pako'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -39,3 +40,17 @@ export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
 export type ModifyUsernameFormData = z.infer<typeof modifyUsernameSchema>
 export type ModifyPasswordFormData = z.infer<typeof modifyPasswordSchema>
+
+export function compressToken(token: string): string {
+  try {
+    const tokenData = new TextEncoder().encode(token);
+    const compressed = pako.gzip(tokenData);
+    const base64 = btoa(
+      String.fromCharCode.apply(null, Array.from(compressed))
+    );
+    return encodeURIComponent(base64);
+  } catch (error) {
+    console.error('Failed to compress token:', error);
+    return '';
+  }
+}

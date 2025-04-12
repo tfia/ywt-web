@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/store';
 import { useState } from 'react';
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2 } from 'lucide-react';
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2, MessageSquareTextIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { modifyPasswordSchema, modifyUsernameSchema, ModifyPasswordFormData, ModifyUsernameFormData } from '@/lib/utils';
@@ -58,6 +58,10 @@ export default function DashboardPage() {
     setShowToken(!showToken);
   };
 
+  const navigateToChat = () => {
+    router.push('/chat');
+  };
+
   const onSubmitUsername = async (data: ModifyUsernameFormData) => {
     try {
       setIsSubmitting(true);
@@ -107,7 +111,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
           className="max-w-4xl mx-auto space-y-8"
         >
           <div className="flex justify-between items-center">
@@ -126,9 +130,9 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
             >
-              <Card className="p-6">
+              <Card className="p-6 h-full">
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">个人信息</h3>
                 <div className="space-y-2">
                   <p>
@@ -152,11 +156,11 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
             >
               <Card className="p-6 h-full flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Token</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">开发者 Token</h3>
                   <div className="flex gap-2">
                     <Button 
                       variant="outline" 
@@ -209,10 +213,46 @@ export default function DashboardPage() {
             </motion.div>
           </div>
           
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
+            >
+              <Card className="p-6 h-full flex flex-col">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">开始答疑</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
+                  点击按钮，开始与 YWT 人机助教交谈。
+                </p>
+                <Button 
+                  onClick={navigateToChat}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <MessageSquareTextIcon className="h-5 w-5" />
+                  开始聊天
+                </Button>
+              </Card>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+            >
+              <Card className="p-6 h-full">
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">占位符</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  这个卡片还没想好要干啥。
+                </p>
+              </Card>
+            </motion.div>
+          </div>
+          
           <motion.div
+            id="account-settings"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            transition={{ duration: 0.3, delay: 0.6 }}
           >
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">修改账户信息</h3>
