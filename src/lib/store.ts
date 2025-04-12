@@ -14,7 +14,7 @@ interface AuthState {
   login: (token: string) => void;
   logout: () => void;
   initialize: () => Promise<void>;
-  getToken: () => string | null; // Add the getToken method to the interface
+  getToken: () => string | null;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (token) {
         const { data } = await authApi.getProfile();
         const user: User = {
-          username: data.username, // Now using the username from API
+          username: data.username,
           email: data.email,
           createdAt: data.created_at
         };

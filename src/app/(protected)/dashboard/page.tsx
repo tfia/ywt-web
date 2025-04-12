@@ -6,14 +6,40 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/store';
 import { useState } from 'react';
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { modifyPasswordSchema, modifyUsernameSchema, ModifyPasswordFormData, ModifyUsernameFormData } from '@/lib/utils';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { authApi } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout, getToken } = useAuthStore();
+  const { user, logout, getToken, initialize } = useAuthStore();
   const [copied, setCopied] = useState(false);
   const [showToken, setShowToken] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const token = getToken();
+
+  const usernameForm = useForm<ModifyUsernameFormData>({
+    resolver: zodResolver(modifyUsernameSchema),
+    defaultValues: {
+      new_username: '',
+      password: '',
+    },
+  });
+
+  const passwordForm = useForm<ModifyPasswordFormData>({
+    resolver: zodResolver(modifyPasswordSchema),
+    defaultValues: {
+      current_password: '',
+      new_password: '',
+      confirm_password: '',
+    },
+  });
 
   const handleLogout = () => {
     logout();
@@ -30,6 +56,49 @@ export default function DashboardPage() {
 
   const toggleTokenVisibility = () => {
     setShowToken(!showToken);
+  };
+
+  const onSubmitUsername = async (data: ModifyUsernameFormData) => {
+    try {
+      setIsSubmitting(true);
+      await authApi.modifyUsername({
+        new_username: data.new_username,
+        password: data.password
+      });
+      toast.success("用户名修改成功", {
+        description: "请重新登录以使用新用户名",
+      });
+      usernameForm.reset();
+      await initialize(); // Refresh user data
+    } catch (error) {
+      toast.error("修改失败", {
+        description: "请确认当前密码是否正确",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSubmitPassword = async (data: ModifyPasswordFormData) => {
+    try {
+      setIsSubmitting(true);
+      await authApi.modifyPassword({
+        current_password: data.current_password,
+        new_password: data.new_password
+      });
+      toast.success("密码修改成功", {
+        description: "请使用新密码登录",
+      });
+      passwordForm.reset();
+      logout();
+      router.push('/login');
+    } catch (error) {
+      toast.error("修改失败", {
+        description: "请确认当前密码是否正确",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,6 +208,131 @@ export default function DashboardPage() {
               </Card>
             </motion.div>
           </div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">修改账户信息</h3>
+              
+              <Tabs defaultValue="username" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="username">修改用户名</TabsTrigger>
+                  <TabsTrigger value="password">修改密码</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="username" className="mt-4">
+                  <Form {...usernameForm}>
+                    <form onSubmit={usernameForm.handleSubmit(onSubmitUsername)} className="space-y-4">
+                      <FormField
+                        control={usernameForm.control}
+                        name="new_username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>新用户名</FormLabel>
+                            <FormControl>
+                              <Input placeholder="输入新用户名" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={usernameForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>当前密码</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="输入当前密码以确认身份" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            提交中...
+                          </>
+                        ) : "修改用户名"}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+                
+                <TabsContent value="password" className="mt-4">
+                  <Form {...passwordForm}>
+                    <form onSubmit={passwordForm.handleSubmit(onSubmitPassword)} className="space-y-4">
+                      <FormField
+                        control={passwordForm.control}
+                        name="current_password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>当前密码</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="输入当前密码" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="new_password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>新密码</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="输入新密码" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="confirm_password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>确认新密码</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="再次输入新密码" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            提交中...
+                          </>
+                        ) : "修改密码"}
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
+            </Card>
+          </motion.div>
         </motion.div>
       </div>
     </div>

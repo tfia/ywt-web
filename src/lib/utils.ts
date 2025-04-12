@@ -21,5 +21,21 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 })
 
+export const modifyUsernameSchema = z.object({
+  new_username: z.string().min(2, '用户名至少需要2个字符'),
+  password: z.string().min(6, '请输入当前密码确认身份'),
+})
+
+export const modifyPasswordSchema = z.object({
+  current_password: z.string().min(6, '请输入当前密码'),
+  new_password: z.string().min(6, '新密码至少需要6个字符'),
+  confirm_password: z.string()
+}).refine((data) => data.new_password === data.confirm_password, {
+  message: "两次输入的密码不一致",
+  path: ["confirm_password"],
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
+export type ModifyUsernameFormData = z.infer<typeof modifyUsernameSchema>
+export type ModifyPasswordFormData = z.infer<typeof modifyPasswordSchema>

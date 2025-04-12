@@ -25,6 +25,20 @@ export interface RegisterCredentials {
   password: string;
 }
 
+export interface ModifyUsernameRequest {
+  new_username: string;
+  password: string;
+}
+
+export interface ModifyPasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
+export interface ModifyResponse {
+  status: string;
+}
+
 interface RegisterResponse {
   created_at: string;
 }
@@ -53,4 +67,10 @@ export const authApi = {
 
   verifyEmail: (username: string, code: string) =>
     api.get(`/verify_email/${username}?code=${code}`),
+    
+  modifyUsername: (request: ModifyUsernameRequest) =>
+    api.post<ModifyResponse>('/modify/username', request),
+    
+  modifyPassword: (request: ModifyPasswordRequest) =>
+    api.post<ModifyResponse>('/modify/password', request),
 };
