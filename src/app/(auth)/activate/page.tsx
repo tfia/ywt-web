@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/form-input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { authApi } from '@/lib/api';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 
 // Define activation form schema
@@ -63,9 +63,9 @@ function ActivateForm() {
       await authApi.verifyEmail(username, data.code);
       toast.success('账号激活成功，请登录');
       router.push('/login');
-    } catch (err) {
+    } catch (error) {
       toast.error('激活失败', {
-        description: `${err}`
+        description: getApiErrorMessage(error),
       });
     } finally {
       setIsVerifying(false);

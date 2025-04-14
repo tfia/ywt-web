@@ -14,7 +14,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { LoginFormData, loginSchema } from '@/lib/utils';
-import { authApi } from '@/lib/api';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { Loader2 } from 'lucide-react';
 
@@ -54,9 +54,9 @@ export default function LoginPage() {
       });
       login(response.data.token, currentRole); // Pass token and role
       router.push(currentRole === 'admins' ? '/admin/dashboard' : '/dashboard'); // Redirect based on role
-    } catch (err) {
+    } catch (error) {
       toast.error('登录失败', {
-        description: `${err}`
+        description: getApiErrorMessage(error),
       });
     }
   };

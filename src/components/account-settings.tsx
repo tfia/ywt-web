@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { modifyPasswordSchema, modifyUsernameSchema, ModifyPasswordFormData, ModifyUsernameFormData } from '@/lib/utils';
-import { authApi } from '@/lib/api';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -70,7 +70,7 @@ export function AccountSettings({ role, initialize, logout }: AccountSettingsPro
       await initialize(); // Re-fetch user data
     } catch (error) {
       toast.error("修改失败", {
-        description: `请确认当前密码是否正确 (${error})`,
+        description: getApiErrorMessage(error),
       });
     } finally {
       setIsSubmittingUsername(false);
@@ -93,7 +93,7 @@ export function AccountSettings({ role, initialize, logout }: AccountSettingsPro
       router.push('/login');
     } catch (error) {
       toast.error("修改失败", {
-        description: `请确认当前密码是否正确 (${error})`,
+        description: getApiErrorMessage(error),
       });
     } finally {
       setIsSubmittingPassword(false);
@@ -111,7 +111,7 @@ export function AccountSettings({ role, initialize, logout }: AccountSettingsPro
       router.push('/');
     } catch (error) {
       toast.error("删除失败", {
-        description: `无法删除账户，请稍后再试 (${error})`,
+        description: getApiErrorMessage(error),
       });
     } finally {
       setIsDeleting(false);

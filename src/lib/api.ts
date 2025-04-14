@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios'; // Import AxiosError
 
 // 创建 axios 实例
 const api = axios.create({
@@ -16,6 +16,23 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Helper function to extract error message
+const getApiErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<{ detail?: string; message?: string }>; // Type assertion for response data
+    // Check if response data exists and has 'detail' or 'message'
+    if (axiosError.response?.data && (axiosError.response.data.detail || axiosError.response.data.message)) {
+      return axiosError.response.data.detail || axiosError.response.data.message || axiosError.message;
+    }
+    // Fallback to Axios error message if no specific backend message
+    return axiosError.message; 
+  }
+  if (error instanceof Error) {
+    return error.message; // Standard Error object
+  }
+  return 'An unknown error occurred'; // Fallback for non-Error types
+};
 
 export interface LoginCredentials {
   username: string;
@@ -86,3 +103,6 @@ export const authApi = {
   deleteAccount: (request: DeleteAccountRequest) => 
     api.post<ModifyResponse>('/modify/delete', request),
 };
+
+// Export the helper function
+export { getApiErrorMessage };

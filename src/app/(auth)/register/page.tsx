@@ -14,7 +14,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { RegisterFormData, registerSchema } from '@/lib/utils';
-import { authApi } from '@/lib/api';
+import { authApi, getApiErrorMessage } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -47,9 +47,9 @@ export default function RegisterPage() {
       });
       toast.success('注册成功，请查收激活邮件');
       router.push(`/activate?username=${data.username}`);
-    } catch (err) {
+    } catch (error) {
       toast.error('注册失败', {
-        description: `${err}`
+        description: getApiErrorMessage(error),
       });
     }
   };
