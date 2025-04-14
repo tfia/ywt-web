@@ -65,6 +65,10 @@ export interface ModifyResponse {
   status: string;
 }
 
+export interface SendEmailResponse {
+  status: string;
+}
+
 interface RegisterResponse {
   created_at: string;
 }
@@ -102,6 +106,9 @@ export const authApi = {
 
   deleteAccount: (request: DeleteAccountRequest) => 
     api.post<ModifyResponse>('/modify/delete', request),
+
+  // Add the new sendEmail function
+  sendEmail: () => api.get<SendEmailResponse>('/send_email'),
 };
 
 // Export the helper function

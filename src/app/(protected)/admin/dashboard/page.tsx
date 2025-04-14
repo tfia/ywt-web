@@ -1,19 +1,32 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MailIcon } from 'lucide-react';
 import { AccountSettings } from '@/components/account-settings';
+import { authApi, getApiErrorMessage } from '@/lib/api';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { user, logout, getRole, isLoading, initialize } = useAuthStore();
   const role = getRole();
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   // Redirect non-admins or handle loading state
   useEffect(() => {
@@ -32,10 +45,26 @@ export default function AdminDashboardPage() {
     }
   }, [user, role, isLoading, initialize]);
 
-
   const handleLogout = () => {
     logout();
     router.push('/login');
+  };
+
+  // Function to handle sending email
+  const handleSendEmail = async () => {
+    setIsSendingEmail(true);
+    try {
+      await authApi.sendEmail();
+      toast.success("邮件发送成功", {
+        description: "邮件已成功触发发送。",
+      });
+    } catch (error) {
+      toast.error("邮件发送失败", {
+        description: getApiErrorMessage(error),
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   if (isLoading || role !== 'admins') {
@@ -99,7 +128,57 @@ export default function AdminDashboardPage() {
             </Card>
           </motion.div>
 
-          {/* Render AccountSettings component for admin */}
+          {/* New Card for Sending Email */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }} // Adjust animation as needed
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }} // Adjust delay
+          >
+            <Card className="p-6 h-full">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">邮件服务</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                手动触发周报的发送。会向所有用户发送邮件，请谨慎使用。
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    className="w-full" 
+                    disabled={isSendingEmail}
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        发送中...
+                      </>
+                    ) : (
+                      <>
+                        <MailIcon className="mr-2 h-4 w-4" />
+                        发送邮件通知
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>确认发送邮件？</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      您确定要向所有用户发送邮件通知吗？此操作可能需要一些时间，请勿重复点击。
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isSendingEmail}>取消</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleSendEmail} 
+                      disabled={isSendingEmail}
+                    >
+                      {isSendingEmail ? '发送中...' : '确认发送'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </Card>
+          </motion.div>
+          
           <motion.div
             id="account-settings"
             initial={{ opacity: 0, y: 20 }}
