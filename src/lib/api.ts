@@ -73,4 +73,6 @@ export const authApi = {
     
   modifyPassword: (request: ModifyPasswordRequest) =>
     api.post<ModifyResponse>('/modify/password', request),
+
+  deleteAccount: () => api.post<ModifyResponse>('/modify/delete'),
 };

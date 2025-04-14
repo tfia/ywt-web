@@ -6,13 +6,24 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/store';
 import { useState } from 'react';
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2, MessageSquareTextIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, Loader2, MessageSquareTextIcon, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { modifyPasswordSchema, modifyUsernameSchema, ModifyPasswordFormData, ModifyUsernameFormData } from '@/lib/utils';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { authApi } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -22,6 +33,7 @@ export default function DashboardPage() {
   const [copied, setCopied] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const token = getToken();
 
   const usernameForm = useForm<ModifyUsernameFormData>({
@@ -73,7 +85,7 @@ export default function DashboardPage() {
         description: "请重新登录以使用新用户名",
       });
       usernameForm.reset();
-      await initialize(); // Refresh user data
+      await initialize();
     } catch (error) {
       toast.error("修改失败", {
         description: "请确认当前密码是否正确",
@@ -102,6 +114,24 @@ export default function DashboardPage() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+      await authApi.deleteAccount();
+      toast.success("账户已删除", {
+        description: "您的账户信息已被永久移除。",
+      });
+      logout();
+      router.push('/');
+    } catch (error) {
+      toast.error("删除失败", {
+        description: "无法删除账户，请稍后再试。",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -258,9 +288,10 @@ export default function DashboardPage() {
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">修改账户信息</h3>
               
               <Tabs defaultValue="username" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="username">修改用户名</TabsTrigger>
                   <TabsTrigger value="password">修改密码</TabsTrigger>
+                  <TabsTrigger value="delete" className="text-destructive">删除账户</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="username" className="mt-4">
@@ -369,6 +400,54 @@ export default function DashboardPage() {
                       </Button>
                     </form>
                   </Form>
+                </TabsContent>
+
+                <TabsContent value="delete" className="mt-4">
+                  <div className="space-y-4 p-4 border border-destructive/50 rounded-lg bg-destructive/10 dark:bg-destructive/20">
+                    <h4 className="font-semibold text-destructive">危险操作：删除账户</h4>
+                    <p className="text-sm text-destructive/90 dark:text-destructive/80">
+                      此操作将永久删除您的账户及其所有相关数据。此操作无法撤销。请谨慎操作。
+                    </p>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="destructive" 
+                          className="w-full"
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              删除中...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              我确认要删除我的账户
+                            </>
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>确认删除账户？</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            您确定要永久删除您的账户吗？所有数据将丢失且无法恢复。
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDeleteAccount} 
+                            disabled={isDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {isDeleting ? '删除中...' : '确认删除'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TabsContent>
               </Tabs>
             </Card>
