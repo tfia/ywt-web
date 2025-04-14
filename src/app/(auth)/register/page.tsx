@@ -83,7 +83,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label htmlFor="email">邮箱地址</Label>
+              <Label htmlFor="email">清华邮箱地址</Label>
               <FormInput
                 id="email"
                 type="email"
