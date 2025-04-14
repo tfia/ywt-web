@@ -3,15 +3,32 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store';
 import { compressToken } from '@/lib/utils';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function ChatPage() {
   const router = useRouter();
-  const { getToken } = useAuthStore();
+  const { getToken, getRole, isLoading, logout } = useAuthStore();
   const [chatUrl, setChatUrl] = useState<string>('');
-  
+  const role = getRole();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (role !== 'users') {
+        toast.error("无权访问", { description: "管理员无法与智能体交谈。" });
+        if (role === 'admins') {
+          router.push('/admin/dashboard'); // Redirect admins
+        } else {
+          // If role is null or unexpected, logout and redirect to login
+          logout();
+          router.push('/login');
+        }
+      }
+    }
+  }, [isLoading, role, router, logout]);
+
   useEffect(() => {
     const token = getToken();
     if (token) {
@@ -20,6 +37,15 @@ export default function ChatPage() {
       setChatUrl(`${baseUrl}?tok=${compressedToken}`);
     }
   }, [getToken]);
+
+  // Show loading state while checking authentication and role
+  if (isLoading || role !== 'users') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -34,7 +60,7 @@ export default function ChatPage() {
             <ArrowLeft className="h-4 w-4" /> 返回控制台
           </Button>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
           {chatUrl ? (
             <iframe

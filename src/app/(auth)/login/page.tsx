@@ -16,10 +16,11 @@ import { Card } from '@/components/ui/card';
 import { LoginFormData, loginSchema } from '@/lib/utils';
 import { authApi } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const login = useAuthStore((state) => state.login);
+  const login = useAuthStore((state) => state.login); // Get the updated login function
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -30,21 +31,29 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      const currentRole = useAuthStore.getState().getRole(); // Get role directly from store state
+      if (currentRole === 'admins') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [isLoading, isAuthenticated, router]);
   if (!isLoading && isAuthenticated) {
-    return null;
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
   }
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      const currentRole = isAdmin ? 'admins' : 'users'; // Determine role
       const response = await (isAdmin ? authApi.adminLogin : authApi.login)({
         username: data.username,
         password: data.password
       });
-      login(response.data.token);
-      router.push('/dashboard');
+      login(response.data.token, currentRole); // Pass token and role
+      router.push(currentRole === 'admins' ? '/admin/dashboard' : '/dashboard'); // Redirect based on role
     } catch (err) {
       toast.error('登录失败', {
         description: `${err}`

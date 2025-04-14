@@ -7,22 +7,36 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const { isAuthenticated, isLoading, getRole } = useAuthStore(); // Add getRole
+  const role = getRole(); // Get the role
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
+      // Redirect based on role
+      if (role === 'admins') {
+        router.push('/admin/dashboard');
+      } else if (role === 'users') {
+        router.push('/dashboard');
+      } else {
+        // Fallback if role is somehow null while authenticated (shouldn't happen with current store logic)
+        // Optionally logout or redirect to login
+        router.push('/login'); 
+      }
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, role, router]); // Add role to dependencies
 
-  if (!isLoading && isAuthenticated) {
-    return null;
+  // Render null or loading indicator while checking auth/role and redirecting
+  if (isLoading || isAuthenticated) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
   }
 
+  // Render the landing page content only if not loading and not authenticated
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">

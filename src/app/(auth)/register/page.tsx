@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { RegisterFormData, registerSchema } from '@/lib/utils';
 import { authApi } from '@/lib/api';
+import { Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,7 +33,9 @@ export default function RegisterPage() {
   }, [isLoading, isAuthenticated, router]);
 
   if (!isLoading && isAuthenticated) {
-    return null;
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
   }
 
   const onSubmit = async (data: RegisterFormData) => {

@@ -7,9 +7,12 @@ const api = axios.create({
 
 // 请求拦截器
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('jwt');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // Only access localStorage on the client side
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -28,11 +31,17 @@ export interface RegisterCredentials {
 export interface ModifyUsernameRequest {
   new_username: string;
   password: string;
+  role: 'admins' | 'users';
 }
 
 export interface ModifyPasswordRequest {
   current_password: string;
   new_password: string;
+  role: 'admins' | 'users';
+}
+
+export interface DeleteAccountRequest {
+  role: 'admins' | 'users';
 }
 
 export interface ModifyResponse {
@@ -48,7 +57,7 @@ export interface AuthResponse {
 }
 
 interface ProfileResponse {
-  username: string;  // Added username field
+  username: string;
   email: string;
   created_at: string;
 }
@@ -74,5 +83,6 @@ export const authApi = {
   modifyPassword: (request: ModifyPasswordRequest) =>
     api.post<ModifyResponse>('/modify/password', request),
 
-  deleteAccount: () => api.post<ModifyResponse>('/modify/delete'),
+  deleteAccount: (request: DeleteAccountRequest) => 
+    api.post<ModifyResponse>('/modify/delete', request),
 };

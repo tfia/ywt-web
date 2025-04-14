@@ -14,6 +14,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { authApi } from '@/lib/api';
+import { Loader2 } from 'lucide-react';
 
 // Define activation form schema
 const activationSchema = z.object({
@@ -73,15 +74,15 @@ function ActivateForm() {
 
   // Show loading state while username is being determined
   if (!username && !isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-400">正在加载...</p>
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
   }
 
   if (!isLoading && isAuthenticated) {
-    return null;
+    return <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin" />
+    </div>
   }
 
   return (
@@ -163,7 +164,7 @@ export default function ActivatePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-400">加载中...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     }>
       <ActivateForm />
