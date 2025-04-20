@@ -239,7 +239,7 @@ export function UserManagement() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>确认删除用户？</AlertDialogTitle>
                           <AlertDialogDescription>
-                            您确定要永久删除用户 "{user.username}" 吗？此操作无法撤销，将删除用户及其所有相关数据。
+                            您确定要永久删除用户 {user.username} 吗？此操作无法撤销，将删除用户及其所有相关数据。
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
