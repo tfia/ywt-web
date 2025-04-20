@@ -61,6 +61,11 @@ export interface DeleteAccountRequest {
   role: 'admins' | 'users';
 }
 
+// Add interface for delete user request (admin only)
+export interface DeleteUserRequest {
+  username: string;
+}
+
 export interface ModifyResponse {
   status: string;
 }
@@ -81,6 +86,19 @@ interface ProfileResponse {
   username: string;
   email: string;
   created_at: string;
+}
+
+// Add interface for user list response
+export interface UserListResponse {
+  usernames: string[];
+  emails: string[];
+  created_at: string[];
+}
+
+// Add interface for user stats response
+export interface UserStatsResponse {
+  conversation: number;
+  tags: [string, number][];
 }
 
 export const authApi = {
@@ -107,8 +125,16 @@ export const authApi = {
   deleteAccount: (request: DeleteAccountRequest) => 
     api.post<ModifyResponse>('/modify/delete', request),
 
-  // Add the new sendEmail function
   sendEmail: () => api.get<SendEmailResponse>('/send_email'),
+
+  listUsers: () => api.get<UserListResponse>('/users/list'),
+
+  deleteUser: (request: DeleteUserRequest) =>
+    api.post<ModifyResponse>('/users/delete', request),
+
+  // Modify getUserStats to use username in the URL path
+  getUserStats: (username: string) => 
+    api.get<UserStatsResponse>(`/users/stats/${username}`), 
 };
 
 // Export the helper function

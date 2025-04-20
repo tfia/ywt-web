@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { UserManagement } from '@/components/user-management';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -128,11 +129,18 @@ export default function AdminDashboardPage() {
             </Card>
           </motion.div>
 
-          {/* New Card for Sending Email */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }} // Adjust animation as needed
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
+            <UserManagement />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }} // Adjust delay
+            transition={{ duration: 0.3, delay: 0.4 }}
           >
             <Card className="p-6 h-full">
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">邮件服务</h3>
@@ -183,12 +191,10 @@ export default function AdminDashboardPage() {
             id="account-settings"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }} // Adjust delay as needed
+            transition={{ duration: 0.3, delay: 0.5 }}
           >
             <AccountSettings role="admins" initialize={initialize} logout={logout} />
           </motion.div>
-
-          {/* Add more admin-specific components here later */}
 
         </motion.div>
       </div>
