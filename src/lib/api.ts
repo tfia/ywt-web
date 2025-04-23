@@ -66,6 +66,12 @@ export interface DeleteUserRequest {
   username: string;
 }
 
+// Add interface for single email request
+export interface SendSingleEmailRequest {
+  username: string;
+  content: string;
+}
+
 export interface ModifyResponse {
   status: string;
 }
@@ -126,6 +132,10 @@ export const authApi = {
     api.post<ModifyResponse>('/modify/delete', request),
 
   sendEmail: () => api.get<SendEmailResponse>('/send_email'),
+
+  // Add endpoint for sending email to a single user
+  sendSingleEmail: (request: SendSingleEmailRequest) =>
+    api.post<SendEmailResponse>('/send_email/single', request),
 
   listUsers: () => api.get<UserListResponse>('/users/list'),
 
