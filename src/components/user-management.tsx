@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { Loader2, Trash2, BarChartIcon, SearchIcon } from 'lucide-react';
+import { Loader2, Trash2, BarChartIcon, SearchIcon, MailIcon } from 'lucide-react';
 
 import { 
   authApi, 
@@ -58,6 +58,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuthStore } from '@/lib/store';
 
 interface UserData {
   username: string;
@@ -75,13 +77,18 @@ export function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isFetchingStats, setIsFetchingStats] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [selectedUserStats, setSelectedUserStats] = useState<UserStats | null>(null);
   const [statsError, setStatsError] = useState<string | null>(null);
   const [statsDialogOpen, setStatsDialogOpen] = useState(false);
   const [selectedUsernameForStats, setSelectedUsernameForStats] = useState<string | null>(null);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [selectedUsernameForEmail, setSelectedUsernameForEmail] = useState<string | null>(null);
+  const [emailContent, setEmailContent] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { user: adminUser } = useAuthStore();
 
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
@@ -160,6 +167,37 @@ export function UserManagement() {
     }
   };
 
+  const handleSendEmail = async (username: string) => {
+    setSelectedUsernameForEmail(username);
+    setEmailDialogOpen(true);
+    setEmailContent('');
+  };
+
+  const handleConfirmSendEmail = async () => {
+    if (!selectedUsernameForEmail || !emailContent.trim()) {
+      toast.error("发送失败", { description: "用户名或邮件内容不能为空。" });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      await authApi.sendSingleEmail({
+        username: selectedUsernameForEmail,
+        content: emailContent
+      });
+      toast.success("邮件发送成功", {
+        description: `已向用户 ${selectedUsernameForEmail} 发送邮件。`,
+      });
+      setEmailDialogOpen(false);
+    } catch (error) {
+      toast.error("邮件发送失败", {
+        description: getApiErrorMessage(error),
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const formatDateTime = (dateTimeString: string) => {
     try {
       const date = new Date(dateTimeString); 
@@ -225,18 +263,44 @@ export function UserManagement() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{formatDateTime(user.createdAt)}</TableCell>
                     <TableCell className="text-right space-x-2">
-                      <Dialog open={statsDialogOpen && selectedUsernameForStats === user.username} onOpenChange={(open) => { if (!open) setStatsDialogOpen(false); }}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewStats(user.username)}
-                            disabled={isFetchingStats && selectedUsernameForStats === user.username}
-                          >
-                            <BarChartIcon className="mr-1 h-4 w-4" />
-                            统计
-                          </Button>
-                        </DialogTrigger>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewStats(user.username)}
+                        disabled={isFetchingStats && selectedUsernameForStats === user.username}
+                      >
+                        <BarChartIcon className="mr-1 h-4 w-4" />
+                        统计
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSendEmail(user.username)}
+                        disabled={isSendingEmail && selectedUsernameForEmail === user.username}
+                      >
+                        <MailIcon className="mr-1 h-4 w-4" />
+                        发送邮件
+                      </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => {
+                          document.getElementById(`delete-dialog-${user.username}`)?.click();
+                        }}
+                        disabled={isDeleting === user.username}
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" />
+                        删除
+                      </Button>
+
+                      <Dialog 
+                        open={statsDialogOpen && selectedUsernameForStats === user.username} 
+                        onOpenChange={(open) => {
+                          if (!open) setStatsDialogOpen(false);
+                        }}
+                      >
                         <DialogContent>
                           <DialogHeader>
                             <DialogTitle>用户统计: {user.username}</DialogTitle>
@@ -277,19 +341,76 @@ export function UserManagement() {
                         </DialogContent>
                       </Dialog>
 
+                      <Dialog 
+                        open={emailDialogOpen && selectedUsernameForEmail === user.username} 
+                        onOpenChange={(open) => {
+                          if (!open) setEmailDialogOpen(false);
+                        }}
+                      >
+                        <DialogContent className="max-w-[600px] w-[90vw] max-h-[80vh] h-auto">
+                          <DialogHeader>
+                            <DialogTitle>发送邮件给: {user.username}</DialogTitle>
+                            <DialogDescription>
+                              邮件将发送到 {user.email}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-6 py-4">
+                            <div className="space-y-4">
+                              <Label htmlFor="email-content" className="text-base">邮件内容</Label>
+                              <Textarea 
+                                id="email-content"
+                                placeholder="请输入您要发送的邮件内容..."
+                                value={emailContent}
+                                onChange={(e) => setEmailContent(e.target.value)}
+                                rows={10}
+                                className="resize-none min-h-[200px] text-base"
+                              />
+                              <p className="flex items-center text-sm text-muted-foreground">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                以下信息会被自动附加在邮件末尾
+                              </p>
+                              <div className="bg-muted/50 rounded-md p-3 text-sm text-muted-foreground border border-muted">
+                                <p className="flex items-center">
+                                  {`此邮件由 ${adminUser?.username} \<${adminUser?.email}\> 触发 YWT Bot 发送。若要回复，请直接回复发件人。`}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <DialogFooter className="mt-2">
+                            <DialogClose asChild>
+                              <Button variant="outline" disabled={isSendingEmail}>取消</Button>
+                            </DialogClose>
+                            <Button 
+                              onClick={handleConfirmSendEmail} 
+                              disabled={isSendingEmail || !emailContent.trim()}
+                              className="min-w-[100px]"
+                            >
+                              {isSendingEmail ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  发送中...
+                                </>
+                              ) : (
+                                '发送邮件'
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Hidden trigger for delete dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
-                            variant="destructive"
-                            size="sm"
-                            disabled={isDeleting === user.username}
+                            id={`delete-dialog-${user.username}`}
+                            className="hidden"
+                            type="button"
                           >
-                            {isDeleting === user.username ? (
-                              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="mr-1 h-4 w-4" />
-                            )}
-                            删除
+                            Hidden Delete Button
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

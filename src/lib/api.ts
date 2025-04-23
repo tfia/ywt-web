@@ -66,12 +66,6 @@ export interface DeleteUserRequest {
   username: string;
 }
 
-// Add interface for single email request
-export interface SendSingleEmailRequest {
-  username: string;
-  content: string;
-}
-
 export interface ModifyResponse {
   status: string;
 }
@@ -107,6 +101,12 @@ export interface UserStatsResponse {
   tags: [string, number][];
 }
 
+// Add interface for sending email to a single user
+export interface SendSingleEmailRequest {
+  username: string;
+  content: string;
+}
+
 export const authApi = {
   login: (credentials: LoginCredentials) =>
     api.post<AuthResponse>('/login', credentials),
@@ -133,10 +133,6 @@ export const authApi = {
 
   sendEmail: () => api.get<SendEmailResponse>('/send_email'),
 
-  // Add endpoint for sending email to a single user
-  sendSingleEmail: (request: SendSingleEmailRequest) =>
-    api.post<SendEmailResponse>('/send_email/single', request),
-
   listUsers: () => api.get<UserListResponse>('/users/list'),
 
   deleteUser: (request: DeleteUserRequest) =>
@@ -145,6 +141,10 @@ export const authApi = {
   // Modify getUserStats to use username in the URL path
   getUserStats: (username: string) => 
     api.get<UserStatsResponse>(`/users/stats/${username}`), 
+
+  // Add new API endpoint for sending email to a single user
+  sendSingleEmail: (request: SendSingleEmailRequest) =>
+    api.post<SendEmailResponse>('/send_email/single', request),
 };
 
 // Export the helper function
