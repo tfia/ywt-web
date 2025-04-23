@@ -85,6 +85,7 @@ export function UserManagement() {
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [selectedUsernameForEmail, setSelectedUsernameForEmail] = useState<string | null>(null);
   const [emailContent, setEmailContent] = useState('');
+  const [emailTitle, setEmailTitle] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -171,11 +172,12 @@ export function UserManagement() {
     setSelectedUsernameForEmail(username);
     setEmailDialogOpen(true);
     setEmailContent('');
+    setEmailTitle('');
   };
 
   const handleConfirmSendEmail = async () => {
-    if (!selectedUsernameForEmail || !emailContent.trim()) {
-      toast.error("发送失败", { description: "用户名或邮件内容不能为空。" });
+    if (!selectedUsernameForEmail || !emailContent.trim() || !emailTitle.trim()) {
+      toast.error("发送失败", { description: "用户名、标题或邮件内容不能为空。" });
       return;
     }
 
@@ -183,6 +185,7 @@ export function UserManagement() {
     try {
       await authApi.sendSingleEmail({
         username: selectedUsernameForEmail,
+        title: emailTitle,
         content: emailContent
       });
       toast.success("邮件发送成功", {
@@ -347,23 +350,32 @@ export function UserManagement() {
                           if (!open) setEmailDialogOpen(false);
                         }}
                       >
-                        <DialogContent className="max-w-[600px] w-[90vw] max-h-[80vh] h-auto">
+                        <DialogContent className="max-w-[650px] w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
                           <DialogHeader>
                             <DialogTitle>发送邮件给: {user.username}</DialogTitle>
                             <DialogDescription>
                               邮件将发送到 {user.email}
                             </DialogDescription>
                           </DialogHeader>
-                          <div className="space-y-6 py-4">
+                          <div className="flex-1 overflow-y-auto py-4 pr-1 space-y-4">
                             <div className="space-y-4">
+                              <Label htmlFor="email-title" className="text-base">邮件标题</Label>
+                              <Input 
+                                id="email-title"
+                                placeholder="请输入邮件标题..."
+                                value={emailTitle}
+                                onChange={(e) => setEmailTitle(e.target.value)}
+                                className="text-base"
+                              />
+                              
                               <Label htmlFor="email-content" className="text-base">邮件内容</Label>
                               <Textarea 
                                 id="email-content"
                                 placeholder="请输入您要发送的邮件内容..."
                                 value={emailContent}
                                 onChange={(e) => setEmailContent(e.target.value)}
-                                rows={10}
-                                className="resize-none min-h-[200px] text-base"
+                                rows={6}
+                                className="resize-none text-base min-h-[200px]"
                               />
                               <p className="flex items-center text-sm text-muted-foreground">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
@@ -380,13 +392,13 @@ export function UserManagement() {
                               </div>
                             </div>
                           </div>
-                          <DialogFooter className="mt-2">
+                          <DialogFooter className="border-t pt-4 mt-2 sticky bottom-0 bg-background">
                             <DialogClose asChild>
                               <Button variant="outline" disabled={isSendingEmail}>取消</Button>
                             </DialogClose>
                             <Button 
                               onClick={handleConfirmSendEmail} 
-                              disabled={isSendingEmail || !emailContent.trim()}
+                              disabled={isSendingEmail || !emailContent.trim() || !emailTitle.trim()}
                               className="min-w-[100px]"
                             >
                               {isSendingEmail ? (

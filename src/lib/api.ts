@@ -104,6 +104,7 @@ export interface UserStatsResponse {
 // Add interface for sending email to a single user
 export interface SendSingleEmailRequest {
   username: string;
+  title: string;
   content: string;
 }
 
