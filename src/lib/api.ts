@@ -146,6 +146,9 @@ export const authApi = {
   // Add new API endpoint for sending email to a single user
   sendSingleEmail: (request: SendSingleEmailRequest) =>
     api.post<SendEmailResponse>('/send_email/single', request),
+
+  // Add new API endpoint for fetching logged-in user's stats
+  getOwnStats: () => api.get<UserStatsResponse>('/stats'),
 };
 
 // Export the helper function
