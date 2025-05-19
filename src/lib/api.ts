@@ -108,6 +108,11 @@ export interface SendSingleEmailRequest {
   content: string;
 }
 
+// Add interface for clear stats response
+export interface ClearStatsResponse {
+  status: string;
+}
+
 export const authApi = {
   login: (credentials: LoginCredentials) =>
     api.post<AuthResponse>('/login', credentials),
@@ -149,6 +154,9 @@ export const authApi = {
 
   // Add new API endpoint for fetching logged-in user's stats
   getOwnStats: () => api.get<UserStatsResponse>('/stats'),
+
+  // Add new API endpoint for clearing all user stats
+  clearAllStats: () => api.post<ClearStatsResponse>('/stats/clear'),
 };
 
 // Export the helper function

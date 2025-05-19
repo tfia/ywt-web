@@ -7,9 +7,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
-import { Loader2, MailIcon } from 'lucide-react';
+import { Loader2, MailIcon, Trash2 as TrashIcon } from 'lucide-react'; // Added TrashIcon
 import { AccountSettings } from '@/components/account-settings';
-import { authApi, getApiErrorMessage } from '@/lib/api';
+import { authApi, getApiErrorMessage, ClearStatsResponse } from '@/lib/api'; // Added ClearStatsResponse
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,7 @@ export default function AdminDashboardPage() {
   const { user, logout, getRole, isLoading, initialize } = useAuthStore();
   const role = getRole();
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isClearingStats, setIsClearingStats] = useState(false); // State for clearing stats
 
   // Redirect non-admins or handle loading state
   useEffect(() => {
@@ -65,6 +66,23 @@ export default function AdminDashboardPage() {
       });
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  // Function to handle clearing all user stats
+  const handleClearAllStats = async () => {
+    setIsClearingStats(true);
+    try {
+      await authApi.clearAllStats();
+      toast.success("统计数据清除成功", {
+        description: "所有用户的统计数据已被成功清除。",
+      });
+    } catch (error) {
+      toast.error("清除统计数据失败", {
+        description: getApiErrorMessage(error),
+      });
+    } finally {
+      setIsClearingStats(false);
     }
   };
 
@@ -186,12 +204,65 @@ export default function AdminDashboardPage() {
               </AlertDialog>
             </Card>
           </motion.div>
+
+          {/* New Card for Clearing User Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.45 }} // Adjusted delay
+          >
+            <Card className="p-6 h-full">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">清除用户统计</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                此操作将永久删除所有用户的对话次数和标签统计数据。在手动发送周报之后使用。
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive"
+                    className="w-full" 
+                    disabled={isClearingStats}
+                  >
+                    {isClearingStats ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        清除中...
+                      </>
+                    ) : (
+                      <>
+                        <TrashIcon className="mr-2 h-4 w-4" />
+                        清除所有用户统计数据
+                      </>
+                    )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>确认清除所有用户统计数据？</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      您确定要永久删除所有用户的对话和标签统计数据吗？此操作无法撤销。
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isClearingStats}>取消</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleClearAllStats} 
+                      disabled={isClearingStats}
+                      className="bg-destructive hover:bg-destructive/80"
+                    >
+                      {isClearingStats ? '清除中...' : '确认清除'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </Card>
+          </motion.div>
           
           <motion.div
             id="account-settings"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.5 }}
+            transition={{ duration: 0.3, delay: 0.5 }} // Adjusted delay
           >
             <AccountSettings role="admins" initialize={initialize} logout={logout} />
           </motion.div>
